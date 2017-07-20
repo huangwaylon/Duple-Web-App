@@ -1,5 +1,6 @@
 {
   "projects": {
-    "notify": "notify-desktop-d1548"
+    "notify": "notify-desktop-d1548",
+    "duple": "notify-desktop-d1548"
   }
 }

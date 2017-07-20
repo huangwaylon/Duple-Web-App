@@ -1,66 +1,151 @@
-// [START get_messaging_object]
 // Retrieve Firebase Messaging object.
 const messaging = firebase.messaging();
-// [END get_messaging_object]
 
 // IDs of divs that display Instance ID token UI or request permission UI.
-const perms_div = "perms_div";
-const messages_div = "messages_div";
-const signin_div = "signin_div";
+const row_welcome = "row_welcome";
+const row_notification = "row_notification";
+const row_sign_in = "row_sign_in";
+const row_user = "row_user";
 
-// [START refresh_token]
+var UID_VAL = "null";
+
+function signIn() {
+  if (!firebase.auth().currentUser) {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/plus.login');
+
+    firebase.auth().signInWithRedirect(provider);
+  } else {
+    console.log("Already logged in.");
+  }
+}
+
+function signOut() {  
+  if (firebase.auth().currentUser) {
+    firebase.auth().signOut();
+  } else {
+    console.log("Already signed out.");
+  }
+}
+
+/**
+ * initApp handles setting up UI event listeners and registering Firebase auth listeners:
+ *  - firebase.auth().onAuthStateChanged: This listener is called when the user is signed in or
+ *    out, and that is where we update the UI.
+ *  - firebase.auth().getRedirectResult(): This promise completes when the user gets back from
+ *    the auth redirect flow. It is where you can get the OAuth access token from the IDP.
+ */
+function initApp() {
+  console.log("initApp");
+
+  // Result from Redirect auth flow.
+  firebase.auth().getRedirectResult().then(function(result) {
+    if (result.credential) {
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      var token = result.credential.accessToken;
+
+      //document.getElementById('quickstart-oauthtoken').textContent = token;
+    } else {
+      //document.getElementById('quickstart-oauthtoken').textContent = 'null';
+    }
+    // The signed-in user info.
+    var user = result.user;
+  }).catch(function(error) {
+    // Handle Errors here.
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    // The email of the user's account used.
+    var email = error.email;
+    // The firebase.auth.AuthCredential type that was used.
+    var credential = error.credential;
+
+    if (errorCode === 'auth/account-exists-with-different-credential') {
+      alert('You have already signed up with a different auth provider for that email.');
+      // If you are using multiple auth providers on your app you should handle linking the user's accounts here.
+    } else {
+      console.error(error);
+    }
+  });
+
+  // Listening for auth state changes.
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      // User is signed in.
+      var displayName = user.displayName;
+      var email = user.email;
+      var emailVerified = user.emailVerified;
+      var photoURL = user.photoURL;
+      var isAnonymous = user.isAnonymous;
+      var uid = user.uid;
+      var providerData = user.providerData;
+      
+      console.log("uid: " + uid);
+      UID_VAL = uid;
+
+      document.getElementById('row_user_name').textContent = 'Hello ' + displayName;
+      document.getElementById('row_user_email').textContent = 'Signed in as ' + email;
+      //document.getElementById('quickstart-account-details').textContent = JSON.stringify(user, null, '  ');
+    } else {
+      // User is signed out.
+      // document.getElementById('sign-in-status').textContent = 'Signed out';
+      // document.getElementById('quickstart-sign-in').textContent = 'Sign in with Google';
+    }
+    // document.getElementById('quickstart-sign-in').disabled = false;
+  });
+
+  // document.getElementById('quickstart-sign-in').addEventListener('click', toggleSignIn, false);
+}
+
+window.onload = function() {
+  initApp();
+};
+
+
+<!-- INIT APP -->
+
 // Callback fired if Instance ID token is updated.
 messaging.onTokenRefresh(function() {
   messaging.getToken()
   .then(function(refreshedToken) {
     console.log('Token refreshed.');
-    // Indicate that the new Instance ID token has not yet been sent to the
-    // app server.
+    // Indicate that the new Instance ID token has not yet been sent to the app server.
     setTokenSentToServer(false);
     // Send Instance ID token to app server.
     sendTokenToServer(refreshedToken);
-    // [START_EXCLUDE]
+
     // Display new Instance ID token and clear UI of all previous messages.
     resetUI();
-    // [END_EXCLUDE]
+
   })
   .catch(function(err) {
     console.log('Unable to retrieve refreshed token ', err);
     showToken('Unable to retrieve refreshed token ', err);
   });
 });
-// [END refresh_token]
 
-// [START receive_message]
 // Handle incoming messages. Called when:
 // - a message is received while the app has focus
 // - the user clicks on an app notification created by a sevice worker
 //   `messaging.setBackgroundMessageHandler` handler.
 messaging.onMessage(function(payload) {
   console.log("Message received. ", payload);
-  // [START_EXCLUDE]
-  // Update the UI to include the received message.
-  appendMessage(payload);
-  // [END_EXCLUDE]
 });
-// [END receive_message]
 
 function resetUI() {
-  clearMessages();
-  showToken('loading...');
-  // [START get_token]
+  showToken('Loading...');
+
   // Get Instance ID token. Initially this makes a network call, once retrieved
   // subsequent calls to getToken will return from cache.
   messaging.getToken()
   .then(function(currentToken) {
     if (currentToken) {
       sendTokenToServer(currentToken);
-      updateUIForPushEnabled(currentToken);
+      updateUIForSignIn(currentToken);
     } else {
       // Show permission request.
       console.log('No Instance ID token available. Request permission to generate one.');
       // Show permission UI.
-      updateUIForPushPermissionRequired();
+      updateUIForWelcomeAndNotify();
       setTokenSentToServer(false);
     }
   })
@@ -70,12 +155,10 @@ function resetUI() {
     setTokenSentToServer(false);
   });
 }
-// [END get_token]
 
 function showToken(currentToken) {
-  // Show token in console and UI.
-  //var tokenElement = document.querySelector('#token');
-  //tokenElement.textContent = currentToken;
+  // Show token in console.
+  console.log("Current token: " + currentToken);
 }
 
 // Send the Instance ID token your application server, so that it can:
@@ -83,8 +166,7 @@ function showToken(currentToken) {
 // - subscribe/unsubscribe the token from topics
 function sendTokenToServer(currentToken) {
   if (!isTokenSentToServer()) {
-    console.log('Sending token to server...');
-    // TODO(developer): Send the current token to your server.
+    console.log('Sending token to server.');
 
     var data = "uid=" + UID_VAL + "&iid=" + currentToken;
     var path = "https://notifydesktop.herokuapp.com/web/";
@@ -95,10 +177,8 @@ function sendTokenToServer(currentToken) {
 
     setTokenSentToServer(true);
   } else {
-    console.log('Token already sent to server so won\'t send it again ' +
-        'unless it changes');
+    console.log('Token already sent to server so won\'t send it again unless it changes');
   }
-
 }
 
 function isTokenSentToServer() {
@@ -119,84 +199,66 @@ function showHideDiv(divId, show) {
 }
 
 function requestPermission() {
-  console.log('Requesting permission...');
-  // [START request_permission]
+  console.log('Requesting permission for notifications.');
+
   messaging.requestPermission()
   .then(function() {
     console.log('Notification permission granted.');
     // TODO(developer): Retrieve an Instance ID token for use with FCM.
-    // [START_EXCLUDE]
+
     // In many cases once an app has been granted notification permission, it
     // should update its UI reflecting this.
     resetUI();
-    // [END_EXCLUDE]
   })
   .catch(function(err) {
     console.log('Unable to get permission to notify.', err);
   });
-  // [END request_permission]
 }
 
 function deleteToken() {
   // Delete Instance ID token.
-  // [START delete_token]
   messaging.getToken()
   .then(function(currentToken) {
     messaging.deleteToken(currentToken)
     .then(function() {
       console.log('Token deleted.');
       setTokenSentToServer(false);
-      // [START_EXCLUDE]
       // Once token is deleted update UI.
       resetUI();
-      // [END_EXCLUDE]
     })
     .catch(function(err) {
       console.log('Unable to delete token. ', err);
     });
-    // [END delete_token]
   })
   .catch(function(err) {
     console.log('Error retrieving Instance ID token. ', err);
     showToken('Error retrieving Instance ID token. ', err);
   });
-
 }
 
-// Add a message to the messages element.
-function appendMessage(payload) {
-  const messagesElement = document.querySelector('#messages');
-  const dataHeaderELement = document.createElement('h5');
-  const dataElement = document.createElement('pre');
-  dataElement.style = 'overflow-x:hidden;'
-  dataHeaderELement.textContent = 'Received message:';
-  dataElement.textContent = JSON.stringify(payload, null, 2);
-  messagesElement.appendChild(dataHeaderELement);
-  messagesElement.appendChild(dataElement);
+function updateUIForWelcomeAndNotify() {
+  showHideDiv(row_welcome, true);
+  showHideDiv(row_notification, true);
+  showHideDiv(row_sign_in, false);
+  showHideDiv(row_user, false);
 }
 
-// Clear the messages element of all children.
-function clearMessages() {
-  const messagesElement = document.querySelector('#messages');
-  while (messagesElement.hasChildNodes()) {
-    messagesElement.removeChild(messagesElement.lastChild);
-  }
-}
-
-function updateUIForPushEnabled(currentToken) {
-  showHideDiv(perms_div, false);
-  showHideDiv(messages_div, true);
-  showHideDiv(signin_div, true);
+function updateUIForSignIn(currentToken) {
+  showHideDiv(row_welcome, true);
+  showHideDiv(row_notification, false);
+  showHideDiv(row_sign_in, true);
+  showHideDiv(row_user, false);
 
   showToken(currentToken);
 }
 
-function updateUIForPushPermissionRequired() {
-  //showHideDiv(tokenDivId, false);
-  //showHideDiv(permissionDivId, true);
-  showHideDiv(perms_div, true);
-  showHideDiv(messages_div, false);
-  showHideDiv(signin_div, false);
+function updateUIForSignedIn(currentToken) {
+  showHideDiv(row_welcome, true);
+  showHideDiv(row_notification, false);
+  showHideDiv(row_sign_in, false);
+  showHideDiv(row_user, true);
+
+  showToken(currentToken);
 }
 
 resetUI();

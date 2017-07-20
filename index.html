@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
   <title>Duple</title>
 
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
   <!-- CSS  -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
@@ -20,8 +34,6 @@
   <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-messaging.js"></script>
   <script src="/__/firebase/init.js"></script>
 
-  <!--Auth Script-->
-  <script src="auth.js"></script>
 </head>
 <body>
 
@@ -66,7 +78,7 @@
               <p>Permission is needed to send notifications to your browser. Click the button below to request and grant permission!</p>
             </div>
             <div class="card-action">
-              <a href="#">Get Permission</a>
+              <a href="javascript:requestPermission()">Get Permission</a>
             </div>
           </div>
         </div>
@@ -83,25 +95,24 @@
               <p>Your Google account is used to pair your devices. Sign in with the same Google account on all devices.</p>
             </div>
             <div class="card-action">
-              <a href="#">Sign In</a>
+              <a href="javascript:signIn();">Sign In</a>
             </div>
           </div>
         </div>
       </div>
 
-
       <div class="row" id="row_user">
         <div class="col s12 m12">
           <div class="card white darken-1">
             <div class="card-content grey-text">
-              <span class="card-title">Hello Waylon</span>
-              <p>Signed in as wwaylonhuang@gmail.com</p>
+              <span class="card-title" id="row_user_name">Hello Waylon</span>
+              <p id="row_user_email">Signed in as wwaylonhuang@gmail.com</p>
               <div class="progress">
                 <div class="indeterminate"></div>
               </div>
             </div>
             <div class="card-action">
-              <a href="#">Sign Out</a>
+              <a href="javascript:signOut();">Sign Out</a>
               <a href="#">Refresh Token</a>
             </div>
           </div>
@@ -147,6 +158,9 @@
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="js/materialize.js"></script>
   <script src="js/init.js"></script>
+
+  <!--Firebase messaging and Google authentication scripts-->
+  <script src="index.js"></script>
 
   </body>
 </html>
