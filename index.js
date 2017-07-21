@@ -9,7 +9,7 @@ const row_user = "row_user";
 
 const TOAST_LENGTH = 4000;
 
-var UID_VAL = "null";
+var OLD_TOKEN = null;
 
 var apps_json = (function () {
     var json = null;
@@ -51,6 +51,9 @@ function signOut() {
 
     firebase.auth().signOut();
     Materialize.toast('Signed out successfully.', TOAST_LENGTH);
+
+    deleteToken(getUID());
+    window.localStorage.removeItem('uid');
   } else {
     console.log("Already signed out.");
     Materialize.toast('Already signed out.', TOAST_LENGTH);
@@ -69,6 +72,8 @@ function initApp() {
 
   // Result from Redirect auth flow.
   firebase.auth().getRedirectResult().then(function(result) {
+    console.log("Firebase redirect result.");
+
     if (result.credential) {
       // This gives you a Google Access Token. You can use it to access the Google API.
       var token = result.credential.accessToken;
@@ -78,7 +83,6 @@ function initApp() {
     }
     // The signed-in user info.
     var user = result.user;
-    setSigningIn(false);
   }).catch(function(error) {
     // Handle Errors here.
     var errorCode = error.code;
@@ -113,7 +117,7 @@ function initApp() {
       var providerData = user.providerData;
       
       console.log("User is signed in. UID is: " + uid);
-      UID_VAL = uid;
+      setUID(uid);
 
       Materialize.toast('Signed in successfully! Hi ' + displayName + '.', TOAST_LENGTH);
 
@@ -123,6 +127,8 @@ function initApp() {
 
       showHideDiv("progress_signin", false);
       showHideDiv("progress_signout", false);
+
+      sendTokenToServer(getLocalToken(), getUID());
 
       document.getElementById('row_user_name').textContent = 'Hello ' + displayName;
       document.getElementById('row_user_email').textContent = 'Signed in as ' + email;
@@ -170,7 +176,8 @@ messaging.onTokenRefresh(function() {
     // Indicate that the new Instance ID token has not yet been sent to the app server.
     setTokenSentToServer(false);
     // Send Instance ID token to app server.
-    sendTokenToServer(refreshedToken);
+    sendTokenToServer(refreshedToken, getUID());
+    setLocalToken(refreshedToken);
 
     // Display new Instance ID token and clear UI of all previous messages.
     resetUI();
@@ -224,30 +231,17 @@ messaging.onMessage(function(payload) {
 
 function resetUI() {
   console.log("Resetting UI...");
-
   // Get Instance ID token. Initially this makes a network call, once retrieved
   // subsequent calls to getToken will return from cache.
   messaging.getToken()
   .then(function(currentToken) {
     if (currentToken) {
       // Send the token to our server.
-      sendTokenToServer(currentToken);
-      // Hid the notification card.
+      setLocalToken(currentToken);
+      sendTokenToServer(currentToken, getUID());
+
+      // Hide the notification card.
       showHideDiv(row_notification, false);
-
-      if (isLoggedIn()) {
-        showHideDiv(row_sign_in, false);
-        showHideDiv(row_user, true);
-
-        showHideDiv("progress_signin", false);
-        showHideDiv("progress_signout", false);
-      } else {
-        showHideDiv(row_sign_in, true);
-        showHideDiv(row_user, false);
-
-        showHideDiv("progress_signin", isSigningIn());
-        showHideDiv("progress_signout", false);
-      }
     } else {
       console.log('No Instance ID token available. Request permission to generate one.');
       // Show notification card.
@@ -274,17 +268,35 @@ function resetUI() {
     showHideDiv("progress_signin", false);
     showHideDiv("progress_signout", false);
   });
+
+  if (isLoggedIn()) {
+    showHideDiv(row_sign_in, false);
+    showHideDiv(row_user, true);
+
+    showHideDiv("progress_signin", false);
+    showHideDiv("progress_signout", false);
+  } else {
+    showHideDiv(row_sign_in, true);
+    showHideDiv(row_user, false);
+
+    showHideDiv("progress_signin", isSigningIn());
+    showHideDiv("progress_signout", false);
+  }
 }
 
 // Send the Instance ID token your application server, so that it can:
 // - send messages back to this app
 // - subscribe/unsubscribe the token from topics
-function sendTokenToServer(currentToken) {
-  if (!isTokenSentToServer()) {
+function sendTokenToServer(currentToken, currUID) {
+  if (!isTokenSentToServer()) {  
+  	if (currUID === null || currentToken === null) {
+  		return;
+  	} 
+
     console.log('Sending token to server.');
 
-    var data = "uid=" + UID_VAL + "&iid=" + currentToken;
-    var path = "https://notifydesktop.herokuapp.com/web/";
+    var data = "uid=" + currUID + "&iid=" + currentToken;
+    var path = "https://notifydesktop.herokuapp.com/web_add_token/";
     var xhr = new XMLHttpRequest();
     xhr.open("POST", path, true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -292,8 +304,20 @@ function sendTokenToServer(currentToken) {
 
     setTokenSentToServer(true);
   } else {
-    console.log('Token already sent to server so won\'t send it again unless it changes');
+    console.log('Token already sent to server so won\'t send it again unless it changes.');
   }
+}
+
+function deleteTokenFromServer(token, currUID) {
+	console.log('Deleting token from server: ' + token);
+	var data = "uid=" + currUID + "&iid=" + token;
+	var path = "https://notifydesktop.herokuapp.com/web_delete_token/";
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", path, true);
+	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	xhr.send(data);
+
+ 	setTokenSentToServer(false);
 }
 
 function isTokenSentToServer() {
@@ -328,6 +352,22 @@ function setSigningIn(signingIn) {
   window.localStorage.setItem('signingIn', signingIn ? 1 : 0);
 }
 
+function getLocalToken() {
+  return window.localStorage.getItem('token');
+}
+
+function setLocalToken(token) {
+  window.localStorage.setItem('token', token);
+}
+
+function getUID() {
+  return window.localStorage.getItem('uid');
+}
+
+function setUID(uid) {
+  window.localStorage.setItem('uid', uid);
+}
+
 function showHideDiv(divId, show) {
   const div = document.querySelector('#' + divId);
   if (show) {
@@ -354,14 +394,20 @@ function requestPermission() {
   });
 }
 
-function deleteToken() {
+function deleteToken(currUID) {
   // Delete Instance ID token.
-  messaging.getToken()
-  .then(function(currentToken) {
+  messaging.getToken().then(function(currentToken) {
     messaging.deleteToken(currentToken)
     .then(function() {
       console.log('Token deleted.');
-      setTokenSentToServer(false);
+      
+      userUID = getUID()
+      if (userUID !== null) {
+      	currUID = userUID; 
+      }
+
+      deleteTokenFromServer(currentToken, currUID);
+
       // Once token is deleted update UI.
       resetUI();
       Materialize.toast('Token refreshed.', TOAST_LENGTH);
@@ -398,4 +444,3 @@ window.onload = function() {
   initUI();
   resetUI();
 };
-
