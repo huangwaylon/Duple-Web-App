@@ -7,24 +7,36 @@ const row_notification = "row_notification";
 const row_sign_in = "row_sign_in";
 const row_user = "row_user";
 
+const TOAST_LENGTH = 4000;
+
 var UID_VAL = "null";
 
 function signIn() {
+  console.log("Sign in clicked.");
   if (!firebase.auth().currentUser) {
+    // Show progress bar.
+    showHideDiv("progress_signin");
+
     var provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/plus.login');
 
     firebase.auth().signInWithRedirect(provider);
   } else {
     console.log("Already logged in.");
+    Materialize.toast('Already signed in', TOAST_LENGTH);
   }
 }
 
 function signOut() {  
+  console.log("Sign out clicked.");
   if (firebase.auth().currentUser) {
+    // Show progress bar.
+    showHideDiv("progress_signin");
+
     firebase.auth().signOut();
   } else {
     console.log("Already signed out.");
+    Materialize.toast('Already signed out', TOAST_LENGTH);
   }
 }
 
@@ -36,14 +48,13 @@ function signOut() {
  *    the auth redirect flow. It is where you can get the OAuth access token from the IDP.
  */
 function initApp() {
-  console.log("initApp");
+  console.log("Initialize app.");
 
   // Result from Redirect auth flow.
   firebase.auth().getRedirectResult().then(function(result) {
     if (result.credential) {
       // This gives you a Google Access Token. You can use it to access the Google API.
       var token = result.credential.accessToken;
-
       //document.getElementById('quickstart-oauthtoken').textContent = token;
     } else {
       //document.getElementById('quickstart-oauthtoken').textContent = 'null';
@@ -64,6 +75,7 @@ function initApp() {
       // If you are using multiple auth providers on your app you should handle linking the user's accounts here.
     } else {
       console.error(error);
+      Materialize.toast('Strange sign in error. Check console.', TOAST_LENGTH);
     }
   });
 
@@ -79,29 +91,27 @@ function initApp() {
       var uid = user.uid;
       var providerData = user.providerData;
       
-      console.log("uid: " + uid);
+      console.log("User is signed in. UID is: " + uid);
       UID_VAL = uid;
+
+      setLoggedIn(true);
+      showHideDiv(row_sign_in, false);
+      showHideDiv(row_user, true);
 
       document.getElementById('row_user_name').textContent = 'Hello ' + displayName;
       document.getElementById('row_user_email').textContent = 'Signed in as ' + email;
-      //document.getElementById('quickstart-account-details').textContent = JSON.stringify(user, null, '  ');
     } else {
       // User is signed out.
-      // document.getElementById('sign-in-status').textContent = 'Signed out';
-      // document.getElementById('quickstart-sign-in').textContent = 'Sign in with Google';
-    }
-    // document.getElementById('quickstart-sign-in').disabled = false;
-  });
+      console.log("User is signed out.");
+      setLoggedIn(false);
 
-  // document.getElementById('quickstart-sign-in').addEventListener('click', toggleSignIn, false);
+      showHideDiv(row_sign_in, true);
+      showHideDiv(row_user, false);
+    }
+  });
 }
 
-window.onload = function() {
-  initApp();
-};
-
-
-<!-- INIT APP -->
+<!-- INDEX APP -->
 
 // Callback fired if Instance ID token is updated.
 messaging.onTokenRefresh(function() {
@@ -119,7 +129,7 @@ messaging.onTokenRefresh(function() {
   })
   .catch(function(err) {
     console.log('Unable to retrieve refreshed token ', err);
-    showToken('Unable to retrieve refreshed token ', err);
+    Materialize.toast('Unable to get refreshed token', TOAST_LENGTH);
   });
 });
 
@@ -129,36 +139,44 @@ messaging.onTokenRefresh(function() {
 //   `messaging.setBackgroundMessageHandler` handler.
 messaging.onMessage(function(payload) {
   console.log("Message received. ", payload);
+  var n = new Notification(payload.notification.title, payload.notification);
+  setTimeout(n.close.bind(n), 5000); 
 });
 
 function resetUI() {
-  showToken('Loading...');
+  console.log("Resetting UI...");
 
   // Get Instance ID token. Initially this makes a network call, once retrieved
   // subsequent calls to getToken will return from cache.
   messaging.getToken()
   .then(function(currentToken) {
     if (currentToken) {
+      // Send the token to our server.
       sendTokenToServer(currentToken);
-      updateUIForSignIn(currentToken);
+      // Hid the notification card.
+      showHideDiv(row_notification, false);
+
+      if (isLoggedIn()) {
+        showHideDiv(row_sign_in, false);
+        showHideDiv(row_user, true);
+      } else {
+        showHideDiv(row_sign_in, true);
+        showHideDiv(row_user, false);
+      }
     } else {
-      // Show permission request.
       console.log('No Instance ID token available. Request permission to generate one.');
-      // Show permission UI.
-      updateUIForWelcomeAndNotify();
+      // Show notification card.
       setTokenSentToServer(false);
+      showHideDiv(row_notification, true);
+      showHideDiv(row_sign_in, false);
+      showHideDiv(row_user, false);
     }
   })
   .catch(function(err) {
     console.log('An error occurred while retrieving token. ', err);
-    showToken('Error retrieving Instance ID token. ', err);
+    Materialize.toast('Error getting token', TOAST_LENGTH);
     setTokenSentToServer(false);
   });
-}
-
-function showToken(currentToken) {
-  // Show token in console.
-  console.log("Current token: " + currentToken);
 }
 
 // Send the Instance ID token your application server, so that it can:
@@ -189,6 +207,22 @@ function setTokenSentToServer(sent) {
   window.localStorage.setItem('sentToServer', sent ? 1 : 0);
 }
 
+function isLoggedIn() {
+  return window.localStorage.getItem('loggedIn') == 1;
+}
+
+function setLoggedIn(loggedIn) {
+  window.localStorage.setItem('loggedIn', loggedIn ? 1 : 0);
+}
+
+function isWelcomeDismissed() {
+  return window.localStorage.getItem('welcomeDismissed') == 1;
+}
+
+function setWelcomeDismissed(dismissed) {
+  window.localStorage.setItem('welcomeDismissed', dismissed ? 1 : 0);
+}
+
 function showHideDiv(divId, show) {
   const div = document.querySelector('#' + divId);
   if (show) {
@@ -204,14 +238,13 @@ function requestPermission() {
   messaging.requestPermission()
   .then(function() {
     console.log('Notification permission granted.');
-    // TODO(developer): Retrieve an Instance ID token for use with FCM.
-
-    // In many cases once an app has been granted notification permission, it
-    // should update its UI reflecting this.
+    // Retrieve an Instance ID token for use with FCM.
+    // Once an app has been granted notification permission, it should update its UI reflecting this.
     resetUI();
   })
   .catch(function(err) {
     console.log('Unable to get permission to notify.', err);
+    Materialize.toast('Unable to get permission to send notifications.', TOAST_LENGTH);
   });
 }
 
@@ -228,37 +261,32 @@ function deleteToken() {
     })
     .catch(function(err) {
       console.log('Unable to delete token. ', err);
+      Materialize.toast('Unable to delete token', TOAST_LENGTH);
     });
   })
   .catch(function(err) {
     console.log('Error retrieving Instance ID token. ', err);
-    showToken('Error retrieving Instance ID token. ', err);
+    Materialize.toast('Error getting current token', TOAST_LENGTH);
   });
 }
 
-function updateUIForWelcomeAndNotify() {
-  showHideDiv(row_welcome, true);
-  showHideDiv(row_notification, true);
+function dimissWelcome() {
+  showHideDiv(row_welcome, false);
+  setWelcomeDismissed(true);
+}
+
+function initUI() {
+  // If welcome has been dimssed, don't show the card.
+  showHideDiv(row_welcome, !isWelcomeDismissed());
+
+  showHideDiv(row_notification, false);
   showHideDiv(row_sign_in, false);
   showHideDiv(row_user, false);
 }
 
-function updateUIForSignIn(currentToken) {
-  showHideDiv(row_welcome, true);
-  showHideDiv(row_notification, false);
-  showHideDiv(row_sign_in, true);
-  showHideDiv(row_user, false);
+window.onload = function() {
+  initApp();
+  initUI();
+  resetUI();
+};
 
-  showToken(currentToken);
-}
-
-function updateUIForSignedIn(currentToken) {
-  showHideDiv(row_welcome, true);
-  showHideDiv(row_notification, false);
-  showHideDiv(row_sign_in, false);
-  showHideDiv(row_user, true);
-
-  showToken(currentToken);
-}
-
-resetUI();

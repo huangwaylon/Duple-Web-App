@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>Duple</title>
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+
+  <!--Firebase Manifest-->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Import and configure the Firebase SDK -->
+  <!-- These scripts are made available when the app is served or deployed on Firebase Hosting -->
+  <!-- If you do not serve/host your project using Firebase Hosting see https://firebase.google.com/docs/web/setup -->
+  <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-messaging.js"></script>
+  <script src="/__/firebase/init.js"></script>
+
+</head>
+<body>
+
+  <div class="navbar-fixed">
+    <nav class="materialize-red lighten-1" role="navigation">
+      <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Duple</a>
+        <ul class="right hide-on-med-and-down">
+          <li><a href="https://play.google.com/store/apps/details?id=com.waylonhuang.desktopnotification">Get the App</a></li>
+        </ul>
+
+        <ul id="nav-mobile" class="side-nav">
+          <li><a href="https://play.google.com/store/apps/details?id=com.waylonhuang.desktopnotification">Get the App</a></li>
+        </ul>
+        <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+      </div>
+    </nav>
+  </div>
+
+  
+  <div class="container">
+    <div class="section">
+
+      <div class="row" id="privacy">
+        <div class="col s12 m12">
+          <div class="card white darken-1">
+            <div class="card-content grey-text">
+              <h4>Privacy Policy</h4>
+              
+              <p>Last updated: July 20, 2017</p><br/>
+
+              <p>Duple ("us", "we", or "our") operates the https://notify-desktop-d1548.firebaseapp.com website (the "Service").</p><br/>
+
+              <p>This page informs you of our policies regarding the collection, use and disclosure of Personal Information when you use our Service.</p><br/>
+
+              <p>We will not use or share your information with anyone except as described in this Privacy Policy.</p><br/>
+
+              <p>We use your Personal Information for providing and improving the Service. By using the Service, you agree to the collection and use of information in accordance with this policy. Unless otherwise defined in this Privacy Policy, terms used in this Privacy Policy have the same meanings as in our Terms and Conditions, accessible at https://notify-desktop-d1548.firebaseapp.com</p>
+
+
+              <h5>Information Collection And Use</h5>
+
+              <p>While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you. Personally identifiable information may include, but is not limited to, your name ("Personal Information").</p>
+
+              <h5>Log Data</h5>
+
+              <p>We collect information that your browser sends whenever you visit our Service ("Log Data"). This Log Data may include information such as your computer's Internet Protocol ("IP") address, browser type, browser version, the pages of our Service that you visit, the time and date of your visit, the time spent on those pages and other statistics.</p>
+
+              <h5>Cookies</h5>
+
+              <p>Cookies are files with small amount of data, which may include an anonymous unique identifier. Cookies are sent to your browser from a web site and stored on your computer's hard drive.</p><br/>
+
+              <p>We use "cookies" to collect information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our Service.</p>
+
+              <h5>Service Providers</h5>
+
+              <p>We may employ third party companies and individuals to facilitate our Service, to provide the Service on our behalf, to perform Service-related services or to assist us in analyzing how our Service is used.</p><br/>
+
+              <p>These third parties have access to your Personal Information only to perform these tasks on our behalf and are obligated not to disclose or use it for any other purpose.</p>
+
+              <h5>Security</h5>
+
+              <p>The security of your Personal Information is important to us, but remember that no method of transmission over the Internet, or method of electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your Personal Information, we cannot guarantee its absolute security.</p>
+
+              <h5>Links To Other Sites</h5>
+
+              <p>Our Service may contain links to other sites that are not operated by us. If you click on a third party link, you will be directed to that third party's site. We strongly advise you to review the Privacy Policy of every site you visit.</p><br/>
+
+              <p>We have no control over, and assume no responsibility for the content, privacy policies or practices of any third party sites or services.</p>
+
+              <h5>Children's Privacy</h5>
+
+              <p>Our Service does not address anyone under the age of 13 ("Children").</p><br/>
+
+              <p>We do not knowingly collect personally identifiable information from children under 13. If you are a parent or guardian and you are aware that your Children has provided us with Personal Information, please contact us. If we discover that a Children under 13 has provided us with Personal Information, we will delete such information from our servers immediately.</p>
+
+              <h5>Changes To This Privacy Policy</h5>
+
+              <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.</p><br/>
+
+              <p>You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.</p>
+
+              <h5>Contact Us</h5>
+              <p>If you have any questions about this Privacy Policy, please contact us.</p>
+
+
+            </div>
+            <div class="card-action">
+              <a href="/">Got It</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="page-footer blue-grey lighten-1">
+    <div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+          <h5 class="white-text">About</h5>
+          <p class="grey-text text-lighten-4">Duple is a flexible and powerful app for better communication. Show your support with a <a class="blue-text text-lighten-4" href="https://play.google.com/store/apps/details?id=com.waylonhuang.desktopnotification">positive review</a> and by sharing it with others! Thank you!</p>
+
+
+        </div>
+        <div class="col l3 s12">
+          <h5 class="white-text">Privacy</h5>
+          <ul>
+            <li><a class="white-text" href="#!">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div class="col l3 s12" id="contact">
+          <h5 class="white-text">Contact</h5>
+          <ul>
+            <li><a class="white-text" href="mailto:dupleapp@gmail.com">Email</a></li>
+            <li><a class="white-text" href="https://twitter.com/whwaylon">Twitter</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      <div class="container">
+      <a class="blue-text text-lighten-4" href="https://play.google.com/store/apps/developer?id=Waylon+Huang">Duple Team</a> © 2017
+      </div>
+    </div>
+  </footer>
+
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="js/materialize.js"></script>
+  <script src="js/init.js"></script>
+
+  </body>
+</html>

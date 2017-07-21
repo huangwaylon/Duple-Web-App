@@ -39,7 +39,7 @@
 
   <div class="navbar-fixed">
     <nav class="materialize-red lighten-1" role="navigation">
-      <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Duple</a>
+      <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Duple</a>
         <ul class="right hide-on-med-and-down">
           <li><a href="https://play.google.com/store/apps/details?id=com.waylonhuang.desktopnotification">Get the App</a></li>
         </ul>
@@ -61,10 +61,10 @@
           <div class="card white darken-1">
             <div class="card-content grey-text">
               <span class="card-title">Welcome!</span>
-              <p>With Duple, we aim to improve communication by mirroring your notifications across different platforms. If you haven't done so already, download the companion <a href="#">Android app</a>. Visit our <a href="#">FAQ</a> for any questions or <a href="#">contact us</a> about any questions or issues. Thank you for using Duple!</p>
+              <p>With Duple, we aim to improve communication by mirroring your notifications across different platforms. If you haven't done so already, download the companion <a href="https://play.google.com/store/apps/details?id=com.waylonhuang.desktopnotification">Android app</a>. Visit our <a href="#">FAQ</a> for any questions or <a href="#contact">contact us</a> about any questions or issues. Thank you for using Duple!</p>
             </div>
             <div class="card-action">
-              <a href="#">Got It</a>
+              <a href="javascript:dimissWelcome();">Got It</a>
             </div>
           </div>
         </div>
@@ -89,7 +89,7 @@
           <div class="card white darken-1">
             <div class="card-content grey-text">
               <span class="card-title">Sign In</span>
-              <div class="progress">
+              <div class="progress" id="progress_signin">
                 <div class="indeterminate"></div>
               </div>
               <p>Your Google account is used to pair your devices. Sign in with the same Google account on all devices.</p>
@@ -107,13 +107,13 @@
             <div class="card-content grey-text">
               <span class="card-title" id="row_user_name">Hello Waylon</span>
               <p id="row_user_email">Signed in as wwaylonhuang@gmail.com</p>
-              <div class="progress">
+              <div class="progress" class="progress_signout">
                 <div class="indeterminate"></div>
               </div>
             </div>
             <div class="card-action">
               <a href="javascript:signOut();">Sign Out</a>
-              <a href="#">Refresh Token</a>
+              <a href="javascript:deleteToken()">Refresh Token</a>
             </div>
           </div>
         </div>
@@ -134,10 +134,10 @@
         <div class="col l3 s12">
           <h5 class="white-text">Privacy</h5>
           <ul>
-            <li><a class="white-text" href="#!">Privacy Policy</a></li>
+            <li><a class="white-text" href="/privacy.html">Privacy Policy</a></li>
           </ul>
         </div>
-        <div class="col l3 s12">
+        <div class="col l3 s12" id="contact">
           <h5 class="white-text">Contact</h5>
           <ul>
             <li><a class="white-text" href="mailto:dupleapp@gmail.com">Email</a></li>
