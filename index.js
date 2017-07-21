@@ -11,6 +11,21 @@ const TOAST_LENGTH = 4000;
 
 var UID_VAL = "null";
 
+var apps_json = (function () {
+    var json = null;
+    $.ajax({
+        'async': false,
+        'global': false,
+        'url': 'actions.json',
+        'dataType': "json",
+        'success': function (data) {
+            json = data;
+            console.log(json);
+        }
+    });
+    return json;
+})(); 
+
 function signIn() {
   console.log("Sign in clicked.");
   if (!firebase.auth().currentUser) {
@@ -127,6 +142,26 @@ function initApp() {
 
 <!-- INDEX APP -->
 
+Date.prototype.customFormat = function(formatString) {
+    var YYYY,YY,MMMM,MMM,MM,M,DDDD,DDD,DD,D,hhhh,hhh,hh,h,mm,m,ss,s,ampm,AMPM,dMod,th;
+    YY = ((YYYY=this.getFullYear())+"").slice(-2);
+    MM = (M=this.getMonth()+1)<10?('0'+M):M;
+    MMM = (MMMM=["January","February","March","April","May","June","July","August","September","October","November","December"][M-1]).substring(0,3);
+    DD = (D=this.getDate())<10?('0'+D):D;
+    DDD = (DDDD=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][this.getDay()]).substring(0,3);
+    th=(D>=10&&D<=20)?'th':((dMod=D%10)==1)?'st':(dMod==2)?'nd':(dMod==3)?'rd':'th';
+    formatString = formatString.replace("#YYYY#",YYYY).replace("#YY#",YY).replace("#MMMM#",MMMM).replace("#MMM#",MMM).replace("#MM#",MM).replace("#M#",M).replace("#DDDD#",DDDD).replace("#DDD#",DDD).replace("#DD#",DD).replace("#D#",D).replace("#th#",th);
+    h=(hhh=this.getHours());
+    if (h==0) h=24;
+    if (h>12) h-=12;
+    hh = h<10?('0'+h):h;
+    hhhh = hhh<10?('0'+hhh):hhh;
+    AMPM=(ampm=hhh<12?'am':'pm').toUpperCase();
+    mm=(m=this.getMinutes())<10?('0'+m):m;
+    ss=(s=this.getSeconds())<10?('0'+s):s;
+    return formatString.replace("#hhhh#",hhhh).replace("#hhh#",hhh).replace("#hh#",hh).replace("#h#",h).replace("#mm#",mm).replace("#m#",m).replace("#ss#",ss).replace("#s#",s).replace("#ampm#",ampm).replace("#AMPM#",AMPM);
+  };
+
 // Callback fired if Instance ID token is updated.
 messaging.onTokenRefresh(function() {
   messaging.getToken()
@@ -153,8 +188,38 @@ messaging.onTokenRefresh(function() {
 //   `messaging.setBackgroundMessageHandler` handler.
 messaging.onMessage(function(payload) {
   console.log("Message received. ", payload);
-  var n = new Notification(payload.notification.title, payload.notification);
-  setTimeout(n.close.bind(n), 5000); 
+
+  // Customize notification here
+  const data = payload.data;
+
+  const pkg = data.pkg;
+  var icon = '/icon.png';
+  var click_action = null;
+  if (pkg in apps_json) {
+    icon = "/appicons/" + pkg + ".png";
+    click_action = apps_json[pkg]["url"];
+  }
+
+  var time = new Date(parseInt(data.time));
+  var dateStr = time.customFormat("#MMM# #D#, #h#:#mm# #AMPM#");
+
+  const notificationTitle = data.title;
+  const notificationOptions = {
+    "body": data.body + "\n" + dateStr,
+    "icon": icon,
+    "click_action": click_action
+  };
+
+  const timeout = data.timeout;
+  
+  var n = new Notification(notificationTitle, notificationOptions);
+  n.onclick = function () {
+    if (click_action !== null) {
+      window.open(click_action);
+    }
+  };
+
+  setTimeout(n.close.bind(n), timeout); 
 });
 
 function resetUI() {
