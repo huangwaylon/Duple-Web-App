@@ -61,7 +61,7 @@
           <div class="card white darken-1">
             <div class="card-content grey-text">
               <span class="card-title">Welcome!</span>
-              <p>With Duple, we aim to improve communication by mirroring your notifications across different platforms. If you haven't done so already, download the companion <a href="https://play.google.com/store/apps/details?id=com.waylonhuang.desktopnotification">Android app</a>. Visit our <a href="#">FAQ</a> for any questions or <a href="#contact">contact us</a> about any questions or issues. Thank you for using Duple!</p>
+              <p>With Duple, we aim to improve communication by mirroring your notifications across different platforms. If you haven't done so already, download the companion <a href="https://play.google.com/store/apps/details?id=com.waylonhuang.desktopnotification">Android app</a>. Visit our <a href="/faq.html">FAQ</a> for any questions or <a href="#contact">contact us</a> about any questions or issues. Thank you for using Duple!</p>
             </div>
             <div class="card-action">
               <a href="javascript:dimissWelcome();">Got It</a>
@@ -76,6 +76,9 @@
             <div class="card-content white-text">
               <span class="card-title">Notifications</span>
               <p>Permission is needed to send notifications to your browser. Click the button below to request and grant permission!</p>
+
+              <p>If a toast appears multiple times stating that it's unable to get permission to send notifications or it's unable to get a user token, you will likely have to manually enable notifications for this site. Refer to this link for help with <a class="blue-text text-lighten-4" href="https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DDesktop&hl=en">Chrome</a>. Refer to this link for help with <a class="blue-text text-lighten-4" href="https://support.mozilla.org/en-US/kb/push-notifications-firefox">Firefox</a>.</p>
+
             </div>
             <div class="card-action">
               <a href="javascript:requestPermission()">Get Permission</a>
@@ -105,9 +108,9 @@
         <div class="col s12 m12">
           <div class="card white darken-1">
             <div class="card-content grey-text">
-              <span class="card-title" id="row_user_name">Hello Waylon</span>
-              <p id="row_user_email">Signed in as wwaylonhuang@gmail.com</p>
-              <div class="progress" class="progress_signout">
+              <span class="card-title" id="row_user_name">Hello</span>
+              <p id="row_user_email">Signed in as</p>
+              <div class="progress" id="progress_signout">
                 <div class="indeterminate"></div>
               </div>
             </div>
@@ -135,6 +138,7 @@
           <h5 class="white-text">Privacy</h5>
           <ul>
             <li><a class="white-text" href="/privacy.html">Privacy Policy</a></li>
+            <li><a class="white-text" href="/faq.html">FAQ</a></li>
           </ul>
         </div>
         <div class="col l3 s12" id="contact">

@@ -15,15 +15,16 @@ function signIn() {
   console.log("Sign in clicked.");
   if (!firebase.auth().currentUser) {
     // Show progress bar.
-    showHideDiv("progress_signin");
-
+    showHideDiv("progress_signin", true);
     var provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/plus.login');
 
     firebase.auth().signInWithRedirect(provider);
+
+    setSigningIn(true);
   } else {
     console.log("Already logged in.");
-    Materialize.toast('Already signed in', TOAST_LENGTH);
+    Materialize.toast('Already signed in.', TOAST_LENGTH);
   }
 }
 
@@ -31,12 +32,13 @@ function signOut() {
   console.log("Sign out clicked.");
   if (firebase.auth().currentUser) {
     // Show progress bar.
-    showHideDiv("progress_signin");
+    showHideDiv("progress_signout", true);
 
     firebase.auth().signOut();
+    Materialize.toast('Signed out successfully.', TOAST_LENGTH);
   } else {
     console.log("Already signed out.");
-    Materialize.toast('Already signed out', TOAST_LENGTH);
+    Materialize.toast('Already signed out.', TOAST_LENGTH);
   }
 }
 
@@ -61,6 +63,7 @@ function initApp() {
     }
     // The signed-in user info.
     var user = result.user;
+    setSigningIn(false);
   }).catch(function(error) {
     // Handle Errors here.
     var errorCode = error.code;
@@ -81,6 +84,9 @@ function initApp() {
 
   // Listening for auth state changes.
   firebase.auth().onAuthStateChanged(function(user) {
+    // User is not signing in anymore.
+    setSigningIn(false);
+
     if (user) {
       // User is signed in.
       var displayName = user.displayName;
@@ -94,9 +100,14 @@ function initApp() {
       console.log("User is signed in. UID is: " + uid);
       UID_VAL = uid;
 
+      Materialize.toast('Signed in successfully! Hi ' + displayName + '.', TOAST_LENGTH);
+
       setLoggedIn(true);
       showHideDiv(row_sign_in, false);
       showHideDiv(row_user, true);
+
+      showHideDiv("progress_signin", false);
+      showHideDiv("progress_signout", false);
 
       document.getElementById('row_user_name').textContent = 'Hello ' + displayName;
       document.getElementById('row_user_email').textContent = 'Signed in as ' + email;
@@ -107,6 +118,9 @@ function initApp() {
 
       showHideDiv(row_sign_in, true);
       showHideDiv(row_user, false);
+
+      showHideDiv("progress_signin", false);
+      showHideDiv("progress_signout", false);
     }
   });
 }
@@ -129,7 +143,7 @@ messaging.onTokenRefresh(function() {
   })
   .catch(function(err) {
     console.log('Unable to retrieve refreshed token ', err);
-    Materialize.toast('Unable to get refreshed token', TOAST_LENGTH);
+    Materialize.toast('Unable to get refreshed token.', TOAST_LENGTH);
   });
 });
 
@@ -159,9 +173,15 @@ function resetUI() {
       if (isLoggedIn()) {
         showHideDiv(row_sign_in, false);
         showHideDiv(row_user, true);
+
+        showHideDiv("progress_signin", false);
+        showHideDiv("progress_signout", false);
       } else {
         showHideDiv(row_sign_in, true);
         showHideDiv(row_user, false);
+
+        showHideDiv("progress_signin", isSigningIn());
+        showHideDiv("progress_signout", false);
       }
     } else {
       console.log('No Instance ID token available. Request permission to generate one.');
@@ -170,12 +190,24 @@ function resetUI() {
       showHideDiv(row_notification, true);
       showHideDiv(row_sign_in, false);
       showHideDiv(row_user, false);
+
+      showHideDiv("progress_signin", false);
+      showHideDiv("progress_signout", false);
     }
   })
   .catch(function(err) {
     console.log('An error occurred while retrieving token. ', err);
-    Materialize.toast('Error getting token', TOAST_LENGTH);
+    Materialize.toast('Error getting token.', TOAST_LENGTH);
     setTokenSentToServer(false);
+
+    // Show notification card.
+    setTokenSentToServer(false);
+    showHideDiv(row_notification, true);
+    showHideDiv(row_sign_in, false);
+    showHideDiv(row_user, false);
+
+    showHideDiv("progress_signin", false);
+    showHideDiv("progress_signout", false);
   });
 }
 
@@ -223,6 +255,14 @@ function setWelcomeDismissed(dismissed) {
   window.localStorage.setItem('welcomeDismissed', dismissed ? 1 : 0);
 }
 
+function isSigningIn() {
+  return window.localStorage.getItem('signingIn') == 1;
+}
+
+function setSigningIn(signingIn) {
+  window.localStorage.setItem('signingIn', signingIn ? 1 : 0);
+}
+
 function showHideDiv(divId, show) {
   const div = document.querySelector('#' + divId);
   if (show) {
@@ -241,6 +281,7 @@ function requestPermission() {
     // Retrieve an Instance ID token for use with FCM.
     // Once an app has been granted notification permission, it should update its UI reflecting this.
     resetUI();
+    Materialize.toast('Notification permission granted successfully!', TOAST_LENGTH);
   })
   .catch(function(err) {
     console.log('Unable to get permission to notify.', err);
@@ -258,15 +299,16 @@ function deleteToken() {
       setTokenSentToServer(false);
       // Once token is deleted update UI.
       resetUI();
+      Materialize.toast('Token refreshed.', TOAST_LENGTH);
     })
     .catch(function(err) {
       console.log('Unable to delete token. ', err);
-      Materialize.toast('Unable to delete token', TOAST_LENGTH);
+      Materialize.toast('Unable to delete token.', TOAST_LENGTH);
     });
   })
   .catch(function(err) {
     console.log('Error retrieving Instance ID token. ', err);
-    Materialize.toast('Error getting current token', TOAST_LENGTH);
+    Materialize.toast('Error getting current token.', TOAST_LENGTH);
   });
 }
 
@@ -276,6 +318,8 @@ function dimissWelcome() {
 }
 
 function initUI() {
+  console.log("Initialize UI.");
+
   // If welcome has been dimssed, don't show the card.
   showHideDiv(row_welcome, !isWelcomeDismissed());
 
